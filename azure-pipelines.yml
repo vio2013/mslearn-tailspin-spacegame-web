@@ -1,10 +1,5 @@
 trigger:
-  branches:
-    include:
-    - 'main'     # build all branches
-  paths:
-    exclude:
-    - docs/*  # exclude the docs folder
+- '*'
 
 pool:
   vmImage: 'ubuntu-20.04'
@@ -29,7 +24,7 @@ steps:
 
 - script: './node_modules/.bin/node-sass $(wwwrootDir) --output $(wwwrootDir)'
   displayName: 'Compile Sass assets'
-#############################
+
 - task: gulp@1
   displayName: 'Run gulp tasks'
 
@@ -49,6 +44,14 @@ steps:
     command: 'build'
     arguments: '--no-restore --configuration $(buildConfiguration)'
     projects: '**/*.csproj'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Run unit tests - $(buildConfiguration)'
+  inputs:
+    command: 'test'
+    arguments: '--no-build --configuration $(buildConfiguration)'
+    publishTestResults: true
+    projects: '**/*.Tests.csproj'
 
 - task: DotNetCoreCLI@2
   displayName: 'Publish the project - $(buildConfiguration)'
